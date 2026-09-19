@@ -250,6 +250,8 @@ async def list_applicants(db: AsyncSession = Depends(get_db)):
     return {"applicants": data}
 
 
+from sqlalchemy.exc import IntegrityError
+
 @router.post("/applicants")
 async def create_applicant(body: ApplicantCreate, db: AsyncSession = Depends(get_db)):
     """Create a new applicant with offer letter reference data."""
@@ -259,8 +261,13 @@ async def create_applicant(body: ApplicantCreate, db: AsyncSession = Depends(get
         offer_reference_data=body.offer_reference_data or {},
     )
     db.add(applicant)
-    await db.commit()
-    await db.refresh(applicant)
+    try:
+        await db.commit()
+        await db.refresh(applicant)
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="An applicant with this email already exists.")
+
     return {
         "id": str(applicant.id),
         "full_name": applicant.full_name,
