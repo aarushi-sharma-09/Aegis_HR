@@ -24,14 +24,18 @@ class Settings(BaseSettings):
 
     @property
     def get_postgres_uri(self) -> str:
-        # Render/Heroku provide postgres:// but SQLAlchemy requires postgresql://
+        # Render/Heroku provide postgres:// or postgresql:// 
+        # but SQLAlchemy async requires postgresql+asyncpg://
         uri = self.postgres_uri
         if uri.startswith("postgres://"):
             uri = uri.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif uri.startswith("postgresql://") and not uri.startswith("postgresql+asyncpg://"):
+            uri = uri.replace("postgresql://", "postgresql+asyncpg://", 1)
         return uri
         
     @property
     def get_postgres_uri_sync(self) -> str:
+        # LangGraph checkpointer natively handles postgresql:// using psycopg3
         uri = self.postgres_uri_sync
         if uri.startswith("postgres://"):
             uri = uri.replace("postgres://", "postgresql://", 1)
