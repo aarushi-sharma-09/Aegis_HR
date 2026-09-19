@@ -1,0 +1,321 @@
+{
+  "clientName": "Thunder Client",
+  "collectionName": "Aegis HR BGV — Complete Test Suite",
+  "collectionId": "aegis-hr-bgv-v2",
+  "dateExported": "2026-09-18",
+  "version": "1.2",
+  "_readme": [
+    "CROSS-DOCUMENT VERIFICATION ORDER (MANDATORY):",
+    "  Step 1: Upload CV first     → extracts claimed employment profile (baseline)",
+    "  Step 2: Upload EPFO         → cross-verified against CV employers + dates",
+    "  Step 3: Upload Bank Stmt    → only if EPFO returns NEEDS_FALLBACK",
+    "",
+    "HOW TO USE:",
+    "1. Import this file into Thunder Client (VS Code extension).",
+    "2. In Thunder Client sidebar → Env → click '+' → name it 'Aegis Local'.",
+    "3. Add variable: base_url = http://localhost:8000",
+    "4. Run requests in order: SETUP applicants first, then PIPELINE TEST.",
+    "5. Copy IDs from responses and paste them into the next request.",
+    "",
+    "FAKE TEST DATA: Use sample PNGs from backend/sample_docs/"
+  ],
+  "folders": [
+    { "id": "f0", "name": "00 - Health",          "containerId": "" },
+    { "id": "f1", "name": "01 - Setup Applicants", "containerId": "" },
+    { "id": "f2", "name": "02 - Upload Documents", "containerId": "" },
+    { "id": "f3", "name": "03 - Pipeline Results", "containerId": "" },
+    { "id": "f4", "name": "04 - Admin Review",     "containerId": "" },
+    { "id": "f5", "name": "05 - Dashboard",        "containerId": "" }
+  ],
+  "requests": [
+
+    {
+      "id": "h1",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f0",
+      "name": "Health Check ✅",
+      "url": "{{base_url}}/health",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" },
+      "_expect": "{ status: ok }"
+    },
+    {
+      "id": "h2",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f0",
+      "name": "API Docs (Swagger)",
+      "url": "{{base_url}}/docs",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" }
+    },
+
+    {
+      "id": "a1",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f1",
+      "name": "Create Applicant — Priya (CV test)",
+      "url": "{{base_url}}/api/admin/applicants",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"full_name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@test.com\",\n  \"offer_reference_data\": {\n    \"applicant_name\": \"Priya Sharma\",\n    \"expected_employer\": \"Infosys Limited\"\n  }\n}"
+      },
+      "_instruction": "Copy 'id' from response → use as applicant_id in Upload CV request (d1)"
+    },
+    {
+      "id": "a2",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f1",
+      "name": "Create Applicant — Rahul (EPFO test)",
+      "url": "{{base_url}}/api/admin/applicants",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"full_name\": \"Rahul Mehta\",\n  \"email\": \"rahul.mehta@test.com\",\n  \"offer_reference_data\": {\n    \"applicant_name\": \"Rahul Mehta\",\n    \"expected_employer\": \"Tata Consultancy Services\"\n  }\n}"
+      },
+      "_instruction": "Copy 'id' → use in Upload EPFO request (d2)"
+    },
+    {
+      "id": "a3",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f1",
+      "name": "Create Applicant — Anjali (Bank test)",
+      "url": "{{base_url}}/api/admin/applicants",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"full_name\": \"Anjali Verma\",\n  \"email\": \"anjali.verma@test.com\",\n  \"offer_reference_data\": {\n    \"applicant_name\": \"Anjali Verma\",\n    \"expected_employer\": \"Wipro Technologies\"\n  }\n}"
+      },
+      "_instruction": "Copy 'id' → use in Upload Bank Statement request (d3)"
+    },
+    {
+      "id": "a4",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f1",
+      "name": "List All Applicants",
+      "url": "{{base_url}}/api/admin/applicants",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" }
+    },
+
+    {
+      "id": "d1",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f2",
+      "name": "Upload CV — sample_cv_resume.png",
+      "url": "{{base_url}}/api/documents/upload",
+      "method": "POST",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "formdata",
+        "formdata": [
+          {
+            "name": "applicant_id",
+            "value": "PASTE_PRIYA_ID_FROM_a1",
+            "type": "text"
+          },
+          {
+            "name": "document_type",
+            "value": "cv_resume",
+            "type": "text"
+          },
+          {
+            "name": "file",
+            "value": "",
+            "type": "file",
+            "_hint": "Attach: backend/sample_docs/sample_cv_resume.png"
+          }
+        ]
+      },
+      "_instruction": "Attach sample_cv_resume.png from backend/sample_docs/. Copy 'thread_id' from response → use in r1/r2/r3 in Admin Review folder."
+    },
+    {
+      "id": "d2",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f2",
+      "name": "Upload EPFO — sample_epfo_history.png",
+      "url": "{{base_url}}/api/documents/upload",
+      "method": "POST",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "formdata",
+        "formdata": [
+          {
+            "name": "applicant_id",
+            "value": "PASTE_RAHUL_ID_FROM_a2",
+            "type": "text"
+          },
+          {
+            "name": "document_type",
+            "value": "epfo_history",
+            "type": "text"
+          },
+          {
+            "name": "file",
+            "value": "",
+            "type": "file",
+            "_hint": "Attach: backend/sample_docs/sample_epfo_history.png"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d3",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f2",
+      "name": "Upload Bank Statement — sample_bank_statement.png",
+      "url": "{{base_url}}/api/documents/upload",
+      "method": "POST",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "formdata",
+        "formdata": [
+          {
+            "name": "applicant_id",
+            "value": "PASTE_ANJALI_ID_FROM_a3",
+            "type": "text"
+          },
+          {
+            "name": "document_type",
+            "value": "bank_statement",
+            "type": "text"
+          },
+          {
+            "name": "file",
+            "value": "",
+            "type": "file",
+            "_hint": "Attach: backend/sample_docs/sample_bank_statement.png"
+          }
+        ]
+      }
+    },
+
+    {
+      "id": "p1",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f3",
+      "name": "Dashboard Stats (see pipeline results)",
+      "url": "{{base_url}}/api/admin/dashboard/stats",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" },
+      "_expect": "{ verified: N, needs_review: N, ... }"
+    },
+    {
+      "id": "p2",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f3",
+      "name": "Review Queue (paused pipelines)",
+      "url": "{{base_url}}/api/admin/review-queue",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" },
+      "_expect": "List of documents in NEEDS_REVIEW state — grab thread_id from here"
+    },
+
+    {
+      "id": "r1",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f4",
+      "name": "Get Review Detail (reasoning + discrepancies)",
+      "url": "{{base_url}}/api/admin/review/PASTE_THREAD_ID_HERE",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" },
+      "_instruction": "Replace PASTE_THREAD_ID_HERE with thread_id from upload response or review-queue. You'll see: reasoning steps, discrepancies, extracted_data."
+    },
+    {
+      "id": "r2",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f4",
+      "name": "APPROVE Document ✅",
+      "url": "{{base_url}}/api/admin/review/PASTE_THREAD_ID_HERE/resolve",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"decision\": \"APPROVED\",\n  \"notes\": \"Employer confirmed. All records match EPFO and CV. Candidate verified.\"\n}"
+      },
+      "_expect": "{ final_status: VERIFIED }"
+    },
+    {
+      "id": "r3",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f4",
+      "name": "REJECT Document ❌",
+      "url": "{{base_url}}/api/admin/review/PASTE_THREAD_ID_HERE/resolve",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"decision\": \"REJECTED\",\n  \"notes\": \"Employer name does not match. Employment dates are inconsistent with EPFO records.\"\n}"
+      },
+      "_expect": "{ final_status: REJECTED }"
+    },
+    {
+      "id": "r4",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f4",
+      "name": "Fallback Re-upload (for NEEDS_FALLBACK docs)",
+      "url": "{{base_url}}/api/documents/fallback-upload/PASTE_DOCUMENT_ID_HERE",
+      "method": "POST",
+      "headers": [],
+      "params": [],
+      "body": {
+        "type": "formdata",
+        "formdata": [
+          {
+            "name": "file",
+            "value": "",
+            "type": "file",
+            "_hint": "Attach any sample PNG from backend/sample_docs/"
+          }
+        ]
+      },
+      "_instruction": "Use when document.verification_status == NEEDS_FALLBACK. Replace PASTE_DOCUMENT_ID_HERE with document_id from upload response."
+    },
+
+    {
+      "id": "s1",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f5",
+      "name": "Dashboard Stats — Final Check",
+      "url": "{{base_url}}/api/admin/dashboard/stats",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" }
+    },
+    {
+      "id": "s2",
+      "colId": "aegis-hr-bgv-v2",
+      "containerId": "f5",
+      "name": "All Applicants — Full View",
+      "url": "{{base_url}}/api/admin/applicants",
+      "method": "GET",
+      "headers": [],
+      "params": [],
+      "body": { "type": "none" }
+    }
+  ]
+}
