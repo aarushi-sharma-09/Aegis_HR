@@ -1,0 +1,33 @@
+databases:
+  - name: aegis-bgv-db
+    databaseName: aegis_bgv
+    user: admin
+    plan: free
+
+services:
+  - type: web
+    name: aegis-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: POSTGRES_URI
+        fromDatabase:
+          name: aegis-bgv-db
+          property: connectionString
+      - key: POSTGRES_URI_SYNC
+        fromDatabase:
+          name: aegis-bgv-db
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: UPLOAD_DIR
+        value: ./uploads

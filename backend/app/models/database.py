@@ -21,7 +21,7 @@ from app.config import settings
 
 Base = declarative_base()
 
-engine = create_async_engine(settings.postgres_uri, echo=False, future=True)
+engine = create_async_engine(settings.get_postgres_uri, echo=False, future=True)
 
 AsyncSessionLocal = sessionmaker(
     bind=engine,

@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
     print("✅ Database tables ready")
 
     # 2. Create LangGraph checkpointer and compile graph
-    async with AsyncPostgresSaver.from_conn_string(settings.postgres_uri_sync) as checkpointer:
+    async with AsyncPostgresSaver.from_conn_string(settings.get_postgres_uri_sync) as checkpointer:
         await checkpointer.setup()  # creates LangGraph checkpoint tables
         compiled_graph = await create_compiled_graph(checkpointer)
         app.state.graph = compiled_graph
