@@ -44,8 +44,11 @@ PATTERNS = [
     ("MASKED_PAN",      r"\b[A-Z]{5}[0-9]{4}[A-Z]\b",       "PAN card"),
     ("MASKED_IFSC",     r"\b[A-Z]{4}0[A-Z0-9]{6}\b",        "IFSC code"),
     ("MASKED_ACCT",     r"\b\d{9,18}\b",                     "Bank account number (9-18 digits)"),
-    ("MASKED_EMAIL",    r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "Email"),
+    # OCR often introduces spaces around @ or dots. We allow optional spaces.
+    ("MASKED_EMAIL",    r"\b[A-Za-z0-9._%+-]+\s*@\s*[A-Za-z0-9.-]+\s*\.\s*[A-Z|a-z]{2,}\b", "Email"),
     ("MASKED_PHONE",    r"\b(?:\+91[-.\s]?)?[6-9]\d{9}\b",  "Indian mobile number"),
+    # Compensate for the smaller spaCy model by explicitly capturing names that follow "Name:"
+    ("MASKED_PERSON",   r"(?i)(?:name\s*:\s*)([A-Z][a-z]+(?:[ \t]+[A-Z][a-z]+){0,2})", "Structured Name field"),
 ]
 
 
@@ -60,7 +63,8 @@ def _apply_regex_masking(text: str) -> Tuple[str, Dict[str, str]]:
     for prefix, pattern, _ in PATTERNS:
         counters[prefix] = 0
         for match in re.finditer(pattern, text):
-            real_value = match.group()
+            # If pattern has a capture group, use it. Otherwise use the whole match.
+            real_value = match.group(1) if match.lastindex else match.group()
             # Skip if this real value already has a token
             if real_value in pii_map.values():
                 continue
