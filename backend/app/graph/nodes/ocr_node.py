@@ -65,7 +65,7 @@ def _extract_text_from_image(img_array: np.ndarray) -> str:
     preprocessed = _preprocess_image(img_array)
     # Convert back to PIL for Tesseract
     pil_img = Image.fromarray(preprocessed)
-    config = "--oem 3 --psm 6"  # LSTM engine, uniform block of text
+    config = "--oem 3 --psm 3"  # LSTM engine, fully automatic page segmentation
     return pytesseract.image_to_string(pil_img, config=config)
 
 
